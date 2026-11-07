@@ -1720,7 +1720,7 @@ function exportCsv(filename:string, rows:Record<string,unknown>[]) {
     const safe=/^[=+@\\t\\r-]/.test(raw)?"'"+raw:raw;
     return '"'+safe.replace(/"/g,'""')+'"';
   };
-  const csv="\\uFEFF"+[keys.map(cell).join(","),...rows.map(row=>keys.map(k=>cell(row[k])).join(","))].join("\\r\\n");
+  const csv="\uFEFF"+[keys.map(cell).join(","),...rows.map(row=>keys.map(k=>cell(row[k])).join(","))].join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");a.href=url;a.download=filename;a.click();
@@ -1730,7 +1730,7 @@ function printReport(title:string, rows:Record<string,unknown>[]) {
   if(!rows.length){window.alert("No records available to print.");return;}
   const escape=(v:unknown)=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));
   const cols=Object.keys(rows[0]);
-  const html='<!doctype html><html><head><meta charset="utf-8"><title>'+escape(title)+'</title><style>body{font:12px Arial;padding:24px;color:#17233b}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eee}@page{size:A4 landscape;margin:12mm}</style></head><body><h2>Philippine Normal University</h2><h1>'+escape(title)+'</h1><p>Generated: '+escape(new Date().toLocaleString("en-PH"))+'</p><table><thead><tr>'+cols.map(c=>'<th>'+escape(c)+'</th>').join("")+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(c=>'<td>'+escape(row[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table><script>window.onload=function(){window.print()}<\\/script></body></html>';
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>'+escape(title)+'</title><style>body{font:12px Arial;padding:24px;color:#17233b}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eee}@page{size:A4 landscape;margin:12mm}</style></head><body><h2>Philippine Normal University</h2><h1>'+escape(title)+'</h1><p>Generated: '+escape(new Date().toLocaleString("en-PH"))+'</p><table><thead><tr>'+cols.map(c=>'<th>'+escape(c)+'</th>').join("")+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(c=>'<td>'+escape(row[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table><script>window.onload=function(){window.print()}</script></body></html>';
   const blob=new Blob([html],{type:"text/html"});const url=URL.createObjectURL(blob);const w=window.open(url,"_blank");
   if(!w){window.alert("Allow pop-ups to print or save this report as PDF.");URL.revokeObjectURL(url);}
   else window.setTimeout(()=>URL.revokeObjectURL(url),60000);
