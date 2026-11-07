@@ -1065,7 +1065,7 @@ function PayrollList({ setPage, setSelPay, payrolls, onStatusChange }: {
                     <td className="px-4 py-3"><div className="flex items-center justify-end gap-1">
                       {nxt&&lbl&&<button onClick={()=>setConfirmPay({pr,next:nxt})} className="text-xs font-medium px-2.5 py-1 rounded-lg border border-border hover:bg-muted transition-colors whitespace-nowrap">{lbl}</button>}
                       <button onClick={()=>{setSelPay(pr);setPage("payslip");}} className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-[#1B3A6B] transition-colors"><Eye className="w-4 h-4"/></button>
-                      <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors"><Download className="w-4 h-4"/></button>
+                      <button title="Download payroll CSV" onClick={()=>exportCsv(`payroll-${pr.id}.csv`,[{Period:pr.period,"Cut Off":pr.cutOff,"Pay Date":pr.payDate,Employees:pr.employees,"Gross Pay":pr.grossPay,"Net Pay":pr.netPay,Status:pr.status}])} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors"><Download className="w-4 h-4"/></button>
                     </div></td>
                   </tr>
                 );
@@ -1123,7 +1123,7 @@ function PayslipView({ payroll, setPage, employees }: { payroll:PayrollRun; setP
     <div>
       <div className="flex items-center justify-between mb-4">
         <button onClick={()=>setPage("payroll")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#1B3A6B] transition-colors"><ChevronLeft className="w-4 h-4"/>Back to Payroll</button>
-        <div className="flex gap-2"><Btn variant="outline" size="sm"><Download className="w-3.5 h-3.5"/>Export PDF</Btn><Btn variant="outline" size="sm"><Printer className="w-3.5 h-3.5"/>Print</Btn></div>
+        <div className="flex gap-2"><Btn variant="outline" size="sm" onClick={()=>emp&&ps&&printReport(`Payslip - ${emp.fullName} - ${payroll.period}`,[{"Employee":emp.fullName,"Employee No":emp.employeeNo,"Period":payroll.period,"Basic Salary":emp.monthlySalary,"Net Pay":ps.netPay}])}><Download className="w-3.5 h-3.5"/>Save as PDF</Btn><Btn variant="outline" size="sm" onClick={()=>emp&&ps&&printReport(`Payslip - ${emp.fullName} - ${payroll.period}`,[{"Employee":emp.fullName,"Employee No":emp.employeeNo,"Period":payroll.period,"Basic Salary":emp.monthlySalary,"Net Pay":ps.netPay}])}><Printer className="w-3.5 h-3.5"/>Print</Btn></div>
       </div>
       <div className="max-w-2xl mx-auto">
         <div className="bg-card border border-border rounded-xl p-4 mb-4 shadow-sm">
@@ -1337,7 +1337,7 @@ function AttendancePage({ role, dtr, employees, onEditDtr, photoRecords, onAddPh
     <div>
       <SectionHeader title="Attendance & Daily Time Record" subtitle="Biometric integration · BIO-TIME System"
         action={<div className="flex gap-2">
-          {role!=="employee"&&<Btn variant="outline" size="sm"><Download className="w-3.5 h-3.5"/>Export DTR</Btn>}
+          {role!=="employee"&&<Btn variant="outline" size="sm" onClick={()=>exportCsv(`dtr-${dateF}.csv`,filtered.map(e=>{const r=getDtr(e.id);return {"Employee No":e.employeeNo,Name:e.fullName,Department:e.department,Date:dateF,"Time In":r?.timeIn??"","Time Out":r?.timeOut??"",Status:r?.status??"No record"};}))}><Download className="w-3.5 h-3.5"/>Export DTR</Btn>}
           {role!=="employee"&&<Btn variant="outline" size="sm"><RefreshCw className="w-3.5 h-3.5"/>Sync Biometric</Btn>}
         </div>}/>
       <div className="mb-5 rounded-xl p-4 border flex items-center gap-4" style={{backgroundColor:"#1B3A6B0A",borderColor:"#1B3A6B20"}}>
@@ -1598,7 +1598,7 @@ function Reports({ employees, payrolls, leaves }: { employees:Employee[]; payrol
             <StatCard label="For Approval" value={String(payrolls.filter(p=>p.status==="For Approval").length)} sub="Pending action" icon={AlertCircle} color="red"/>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-semibold">Monthly Payroll Trend</h3><Btn variant="outline" size="sm"><Download className="w-3.5 h-3.5"/>Export CSV</Btn></div>
+            <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-semibold">Monthly Payroll Trend</h3><Btn variant="outline" size="sm" onClick={()=>exportCsv("monthly-payroll-trend.csv",monthlyPayrollData.map(x=>({...x})))}><Download className="w-3.5 h-3.5"/>Export CSV</Btn></div>
             <div style={{height:200}}><ChartArea data={monthlyPayrollData} k1="gross" k2="net" c1="#1B3A6B" c2="#C8A84B" l1="Gross Pay" l2="Net Pay"/></div>
           </div>
         </div>
@@ -1612,7 +1612,7 @@ function Reports({ employees, payrolls, leaves }: { employees:Employee[]; payrol
             <StatCard label="Rejected" value={String(leaves.filter(l=>l.status==="Rejected").length)} icon={XCircle} color="red"/>
           </div>
           <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-semibold">Leave Type Distribution</h3><Btn variant="outline" size="sm"><Download className="w-3.5 h-3.5"/>Export CSV</Btn></div>
+            <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-semibold">Leave Type Distribution</h3><Btn variant="outline" size="sm" onClick={()=>exportCsv("leave-type-distribution.csv",leaveTypePieData.map(x=>({...x})))}><Download className="w-3.5 h-3.5"/>Export CSV</Btn></div>
             <div className="flex justify-center mb-4" style={{height:180}}><ChartDonut data={leaveTypePieData} colors={PIE_COLORS} ir={45} or={70}/></div>
           </div>
         </div>
@@ -1711,6 +1711,31 @@ function NotificationsPage({ notifs, onMarkRead, onMarkAllRead }: {
   );
 }
 
+
+function exportCsv(filename:string, rows:Record<string,unknown>[]) {
+  if (!rows.length) { window.alert("No records available to export."); return; }
+  const keys=Object.keys(rows[0]);
+  const cell=(value:unknown)=>{
+    const raw=String(value??"");
+    const safe=/^[=+@\\t\\r-]/.test(raw)?"'"+raw:raw;
+    return '"'+safe.replace(/"/g,'""')+'"';
+  };
+  const csv="\\uFEFF"+[keys.map(cell).join(","),...rows.map(row=>keys.map(k=>cell(row[k])).join(","))].join("\\r\\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=filename;a.click();
+  window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function printReport(title:string, rows:Record<string,unknown>[]) {
+  if(!rows.length){window.alert("No records available to print.");return;}
+  const escape=(v:unknown)=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));
+  const cols=Object.keys(rows[0]);
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>'+escape(title)+'</title><style>body{font:12px Arial;padding:24px;color:#17233b}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eee}@page{size:A4 landscape;margin:12mm}</style></head><body><h2>Philippine Normal University</h2><h1>'+escape(title)+'</h1><p>Generated: '+escape(new Date().toLocaleString("en-PH"))+'</p><table><thead><tr>'+cols.map(c=>'<th>'+escape(c)+'</th>').join("")+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(c=>'<td>'+escape(row[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table><script>window.onload=function(){window.print()}<\\/script></body></html>';
+  const blob=new Blob([html],{type:"text/html"});const url=URL.createObjectURL(blob);const w=window.open(url,"_blank");
+  if(!w){window.alert("Allow pop-ups to print or save this report as PDF.");URL.revokeObjectURL(url);}
+  else window.setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+
 // ── AUDIT PAGE ────────────────────────────────────────────
 function AuditPage() {
   const logs = [
@@ -1727,7 +1752,7 @@ function AuditPage() {
   return (
     <div>
       <SectionHeader title="Audit Trail" subtitle="Complete system activity log · COA-compliant record keeping"
-        action={<Btn variant="outline" size="sm"><Download className="w-3.5 h-3.5"/>Export Log</Btn>}/>
+        action={<Btn variant="outline" size="sm" onClick={()=>exportCsv("audit-log.csv",logs.map(x=>({...x})))}><Download className="w-3.5 h-3.5"/>Export Log</Btn>}/>
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
           <h3 className="text-sm font-semibold">System Activity Log</h3>
